@@ -1,5 +1,6 @@
 #include "SerialDriver.h"
 #include "types.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -76,15 +77,15 @@ void serial_driver_init(SerialDriver *driver) {
   
 }
 
-uint32_t serial_driver_write(SerialDriver *driver, const uint8_t *buffer) {
+uint32_t serial_driver_write(SerialDriver *driver, const uint8_t *buffer, size_t length) {
   printf("Serial Driver Write\n");
   volatile uint8_t *port = (volatile uint8_t *)driver->membase;
   volatile uint8_t *thr = port + SERIAL_PORT_OFFSET_THR;
   volatile uint8_t *lsr = port + SERIAL_PORT_OFFSET_LSR;
   uint32_t written = 0;
 
-  uint32_t input_length = (uint32_t)strlen((const char *)buffer);
-  if (input_length == 0) {
+  
+  if (length == 0) {
     return 0;
   }
 
@@ -92,8 +93,8 @@ uint32_t serial_driver_write(SerialDriver *driver, const uint8_t *buffer) {
     enum { kChunk = 64 };
     uint8_t encoded[kChunk * 2];
     uint32_t offset = 0;
-    while (offset < input_length) {
-      uint32_t chunk = input_length - offset;
+    while (offset < length) {
+      uint32_t chunk = length - offset;
       if (chunk > kChunk) {
         chunk = kChunk;
       }

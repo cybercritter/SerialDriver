@@ -8,7 +8,7 @@ int main(void) {
   serial_driver_loopback_enabled(&driver);
   serial_driver_discrete_enabled(&driver);
   char write_data[] = "Hello, Serial Port!";
-  serial_driver_write(&driver, (const uint8_t *)write_data);
+  serial_driver_write(&driver, (const uint8_t *)write_data, sizeof(write_data));
   uint8_t read_buffer[128];
   serial_driver_read(&driver, read_buffer, sizeof(read_buffer));
   serial_driver_close(&driver);

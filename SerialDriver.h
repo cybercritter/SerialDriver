@@ -2,6 +2,7 @@
 #define SERIAL_DRIVER_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "types.h"
@@ -21,7 +22,7 @@ typedef struct SerialDriver {
 } SerialDriver;
 
 void serial_driver_init(SerialDriver *driver);
-uint32_t serial_driver_write(SerialDriver *driver, const uint8_t *buffer);
+uint32_t serial_driver_write(SerialDriver *driver, const uint8_t *buffer, size_t length);
 uint32_t serial_driver_read(SerialDriver *driver, uint8_t *buffer,
                             uint32_t length);
 void serial_driver_close(SerialDriver *driver);
