@@ -30,5 +30,6 @@ void serial_driver_set_discrete(SerialDriver *driver, status_t mode);
 void serial_driver_set_loopback(SerialDriver *driver, status_t mode);
 bool serial_driver_loopback_enabled(const SerialDriver *driver);
 bool serial_driver_discrete_enabled(const SerialDriver *driver);
-
+bool serial_driver_data_available(const SerialDriver *driver);
+bool wait_for_thr_empty(SerialDriver *driver, uint32_t timeout_ms);
 #endif

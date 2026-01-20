@@ -4,16 +4,6 @@
 
 #include <stdint.h>
 
-
-// uint32_t SERIAL_PORT_BASE =0x0UL;
-// 16550 UART Register Definitions
-// Base port address for COM1
-// enum {
-//   SERIAL_PORT_BASE = 0xfe0003F8,
-//   MEMBASE_INVALID = 0xFFFFFFFF,
- 
-// };
-
 // Register Offsets
 enum {
   SERIAL_PORT_OFFSET_RBR = 0x0, // Receiver Buffer Register (read)
