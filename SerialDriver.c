@@ -85,9 +85,7 @@ uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t
 
   if (length == 0) {
     return 0;
-  }
-
-  {
+  } else {
     enum { kChunk = 64 };
     uint8_t encoded[kChunk * 2];
     uint32_t offset = 0;
