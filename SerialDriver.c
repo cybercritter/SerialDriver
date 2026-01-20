@@ -82,7 +82,7 @@ uint32_t serial_driver_write(SerialDriver *driver, const uint8_t *buffer,
                              size_t length) {
   volatile uint8_t *port = (volatile uint8_t *)driver->membase;
   volatile uint8_t *thr = port + SERIAL_PORT_OFFSET_THR;
-  volatile uint8_t *lsr = port + SERIAL_PORT_OFFSET_LSR;
+  const volatile uint8_t *lsr = port + SERIAL_PORT_OFFSET_LSR;
   uint32_t written = 0;
 
   if (length == 0) {
@@ -107,27 +107,24 @@ uint32_t serial_driver_write(SerialDriver *driver, const uint8_t *buffer,
         const uint8_t *end = p + encoded_length;
         while (p < end) {
           while (cb_is_full(&driver->tx_cb)) {
-            while ((*lsr & SERIAL_PORT_STATUS_THR_EMPTY) == 0) {
-            }
-            {
-              uint8_t out_byte = 0;
-              cb_pop(&driver->tx_cb, &out_byte);
-              *thr = out_byte;
-              ++written;
-            }
-          }
-          cb_push(&driver->tx_cb, *p++);
-        }
-
-        while (!cb_is_empty(&driver->tx_cb)) {
-          while ((*lsr & SERIAL_PORT_STATUS_THR_EMPTY) == 0) {
-          }
-          {
+            wait_for_thr_empty(driver, 250);
             uint8_t out_byte = 0;
             cb_pop(&driver->tx_cb, &out_byte);
             *thr = out_byte;
             ++written;
           }
+        }
+        cb_push(&driver->tx_cb, *p++);
+      }
+
+      while (!cb_is_empty(&driver->tx_cb)) {
+        while ((*lsr & SERIAL_PORT_STATUS_THR_EMPTY) == 0) {
+        }
+        {
+          uint8_t out_byte = 0;
+          cb_pop(&driver->tx_cb, &out_byte);
+          *thr = out_byte;
+          ++written;
         }
       }
     }
@@ -140,7 +137,7 @@ uint32_t serial_driver_read(SerialDriver *driver, uint8_t *buffer,
                             uint32_t length) {
   volatile uint8_t *port = (volatile uint8_t *)driver->membase;
   volatile uint8_t *rbr = port + SERIAL_PORT_OFFSET_RBR;
-  volatile uint8_t *lsr = port + SERIAL_PORT_OFFSET_LSR;
+  const volatile uint8_t *lsr = port + SERIAL_PORT_OFFSET_LSR;
   uint32_t total_decoded = 0;
   if (length == 0) {
     return 0;
