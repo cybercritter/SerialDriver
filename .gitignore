@@ -60,6 +60,7 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 build/ 
+.cache/**
 
 #index files
 *.idx
