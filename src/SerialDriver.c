@@ -7,8 +7,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "types.h"
-
 static void encode_buffer(const uint8_t* input, uint32_t length, uint8_t* output, uint32_t* out_length) {
   const uint8_t* in = input;
   const uint8_t* end = in + length;
@@ -67,8 +65,7 @@ static uint32_t flush_tx_when_full(SerialDriver* driver, volatile uint8_t* thr, 
   return written;
 }
 
-static uint32_t queue_encoded_bytes(SerialDriver* driver, volatile uint8_t* thr, const uint8_t* data,
-                                    uint32_t length) {
+static uint32_t queue_encoded_bytes(SerialDriver* driver, volatile uint8_t* thr, const uint8_t* data, uint32_t length) {
   uint32_t written = 0;
   const uint8_t* p = data;
   const uint8_t* end = p + length;
@@ -82,8 +79,8 @@ static uint32_t queue_encoded_bytes(SerialDriver* driver, volatile uint8_t* thr,
 static uint32_t drain_tx_cb(SerialDriver* driver, volatile uint8_t* thr, const volatile uint8_t* lsr) {
   uint32_t written = 0;
   while (!cb_is_empty(&driver->tx_cb)) {
-    while ((*lsr & SERIAL_PORT_STATUS_THR_EMPTY) == 0) {
-    }
+    wait_for_thr_empty(driver, 250);
+
     uint8_t out_byte = 0;
     cb_pop(&driver->tx_cb, &out_byte);
     *thr = out_byte;
@@ -92,8 +89,7 @@ static uint32_t drain_tx_cb(SerialDriver* driver, volatile uint8_t* thr, const v
   return written;
 }
 
-static uint32_t pull_from_rx_cache(SerialDriver* driver, uint8_t* buffer, uint32_t length,
-                                   uint32_t total_decoded) {
+static uint32_t pull_from_rx_cache(SerialDriver* driver, uint8_t* buffer, uint32_t length, uint32_t total_decoded) {
   uint8_t cached = 0;
   while (total_decoded < length && cb_pop(&driver->rx_cb, &cached)) {
     buffer[total_decoded++] = cached;
@@ -101,8 +97,8 @@ static uint32_t pull_from_rx_cache(SerialDriver* driver, uint8_t* buffer, uint32
   return total_decoded;
 }
 
-static uint32_t read_raw_from_port(SerialDriver* driver, volatile uint8_t* rbr, uint8_t* raw,
-                                   uint32_t raw_limit, uint32_t decoded_needed, uint8_t* carry_escape) {
+static uint32_t read_raw_from_port(SerialDriver* driver, volatile uint8_t* rbr, uint8_t* raw, uint32_t raw_limit,
+                                   uint32_t decoded_needed, uint8_t* carry_escape) {
   uint32_t raw_len = 0;
   if (*carry_escape) {
     raw[raw_len++] = ESCAPE;
@@ -136,9 +132,8 @@ static uint32_t read_raw_from_port(SerialDriver* driver, volatile uint8_t* rbr, 
   return raw_len;
 }
 
-static uint32_t store_decoded_bytes(SerialDriver* driver, uint8_t* buffer, uint32_t length,
-                                    uint32_t total_decoded, const uint8_t* decoded,
-                                    uint32_t decoded_length) {
+static uint32_t store_decoded_bytes(SerialDriver* driver, uint8_t* buffer, uint32_t length, uint32_t total_decoded,
+                                    const uint8_t* decoded, uint32_t decoded_length) {
   uint32_t remaining = length - total_decoded;
   uint32_t to_copy = decoded_length;
   if (to_copy > remaining) {
@@ -163,8 +158,9 @@ void serial_driver_init(SerialDriver* driver) {
   // SERIAL_PORT_BASE = (uint32_t*) alloc(256); // Example allocation, replace
   // with actual port base address as needed
 
-  driver->membase = (uint8_t*)(uintptr_t)malloc(256 * (sizeof(uint8_t)));
-  volatile uint8_t* port = (volatile uint8_t*)driver->membase;
+  driver->UARTbase = (uint8_t*)(uintptr_t)malloc(256 * (sizeof(uint8_t)));
+
+  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
 
   port[SERIAL_PORT_OFFSET_IER] = 0x00; /* disable interrupts */
   port[SERIAL_PORT_OFFSET_LCR] = 0x80; /* enable DLAB */
@@ -179,7 +175,7 @@ void serial_driver_init(SerialDriver* driver) {
 }
 
 uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t length) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->membase;
+  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
   volatile uint8_t* thr = port + SERIAL_PORT_OFFSET_THR;
   const volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
   uint32_t written = 0;
@@ -208,7 +204,7 @@ uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t
 }
 
 uint32_t serial_driver_read(SerialDriver* driver, uint8_t* buffer, uint32_t length) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->membase;
+  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
   volatile uint8_t* rbr = port + SERIAL_PORT_OFFSET_RBR;
   const volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
   uint32_t total_decoded = 0;
@@ -246,7 +242,7 @@ uint32_t serial_driver_read(SerialDriver* driver, uint8_t* buffer, uint32_t leng
 }
 
 void serial_driver_close(SerialDriver* driver) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->membase;
+  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
 
   port[SERIAL_PORT_OFFSET_IER] = 0x00; /* disable interrupts */
   port[SERIAL_PORT_OFFSET_FCR] = 0x00; /* disable FIFO */
@@ -257,12 +253,12 @@ void serial_driver_close(SerialDriver* driver) {
   cb_reset(&driver->tx_cb);
   cb_reset(&driver->rx_cb);
 
-  free(driver->membase);
-  driver->membase = NULL;
+  free(driver->UARTbase);
+  driver->UARTbase = NULL;
 }
 
 void serial_driver_set_discrete(SerialDriver* driver, status_t mode) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->membase;
+  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
   volatile uint8_t* mcr = port + SERIAL_PORT_OFFSET_MCR;
   uint8_t value = *mcr;
   if (mode) {
@@ -275,7 +271,7 @@ void serial_driver_set_discrete(SerialDriver* driver, status_t mode) {
 }
 
 void serial_driver_set_loopback(SerialDriver* driver, status_t mode) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->membase;
+  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
   volatile uint8_t* mcr = port + SERIAL_PORT_OFFSET_MCR;
   uint8_t value = *mcr;
   if (mode) {
@@ -294,13 +290,13 @@ bool serial_driver_discrete_enabled(const SerialDriver* driver) { return driver-
 bool serial_driver_data_available(const SerialDriver* driver) { return !cb_is_empty(&driver->rx_cb); }
 
 bool serial_driver_transmitter_empty(const SerialDriver* driver) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->membase;
+  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
   volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
   return ((*lsr & SERIAL_PORT_STATUS_THR_EMPTY) != 0);
 }
 
 bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->membase;
+  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
   volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
   uint32_t elapsed = 0;
   const uint32_t poll_interval_ms = 1;

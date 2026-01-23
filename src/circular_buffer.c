@@ -1,10 +1,8 @@
 #include "circular_buffer.h"
 
-static inline bool cb_is_power_of_two(size_t value) {
-  return value != 0 && (value & (value - 1)) == 0;
-}
+static inline bool cb_is_power_of_two(size_t value) { return value != 0 && (value & (value - 1)) == 0; }
 
-void cb_init(circular_buffer_t *cb, uint8_t *storage, size_t capacity) {
+void cb_init(circular_buffer_t* cb, uint8_t* storage, size_t capacity) {
   cb->data = storage;
   cb->capacity = capacity;
   cb->head = 0;
@@ -13,23 +11,21 @@ void cb_init(circular_buffer_t *cb, uint8_t *storage, size_t capacity) {
   cb->mask = cb_is_power_of_two(capacity) ? (capacity - 1) : 0;
 }
 
-void cb_reset(circular_buffer_t *cb) {
+void cb_reset(circular_buffer_t* cb) {
   cb->head = 0;
   cb->tail = 0;
   cb->size = 0;
 }
 
-bool cb_is_empty(const circular_buffer_t *cb) { return cb->size == 0; }
+bool cb_is_empty(const circular_buffer_t* cb) { return cb->size == 0; }
 
-bool cb_is_full(const circular_buffer_t *cb) {
-  return cb->size == cb->capacity;
-}
+bool cb_is_full(const circular_buffer_t* cb) { return cb->size == cb->capacity; }
 
-size_t cb_size(const circular_buffer_t *cb) { return cb->size; }
+size_t cb_size(const circular_buffer_t* cb) { return cb->size; }
 
-size_t cb_capacity(const circular_buffer_t *cb) { return cb->capacity; }
+size_t cb_capacity(const circular_buffer_t* cb) { return cb->capacity; }
 
-bool cb_push(circular_buffer_t *cb, uint8_t value) {
+bool cb_push(circular_buffer_t* cb, uint8_t value) {
   if (cb->size == cb->capacity || cb->capacity == 0) {
     return false;
   }
@@ -44,7 +40,7 @@ bool cb_push(circular_buffer_t *cb, uint8_t value) {
   return true;
 }
 
-bool cb_pop(circular_buffer_t *cb, uint8_t *value) {
+bool cb_pop(circular_buffer_t* cb, uint8_t* value) {
   if (cb->size == 0) {
     return false;
   }
@@ -61,7 +57,7 @@ bool cb_pop(circular_buffer_t *cb, uint8_t *value) {
   return true;
 }
 
-bool cb_peek(const circular_buffer_t *cb, uint8_t *value) {
+bool cb_peek(const circular_buffer_t* cb, uint8_t* value) {
   if (cb->size == 0 || !value) {
     return false;
   }
