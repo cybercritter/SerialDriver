@@ -3,5 +3,6 @@
         "connectionId": "cybercritter",
         "projectKey": "cybercritter_SerialDriver"
     },
-    "sonarlint.pathToCompileCommands": "${workspaceFolder}/compile_commands.json"
+    "sonarlint.pathToCompileCommands": "${workspaceFolder}/compile_commands.json",
+    "makefile.makefilePath": "."
 }
