@@ -1,12 +1,8 @@
 # Serial Driver Readme
 
+## SonarCloude Status
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
-
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=bugs)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
-
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
-
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
+ [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=bugs)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver) [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver) [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
 
 
 
