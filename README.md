@@ -1,5 +1,15 @@
 # Serial Driver Readme
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
+
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=bugs)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
+
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
+
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
+
+
+
 ## Project Overview
 This is a C library implementing a serial communication driver with HDLC-style byte stuffing framing (FLAG=0x7E, ESCAPE=0x7D). It provides buffered I/O over memory-mapped UART registers using circular buffers for transmit/receive queues.
 
