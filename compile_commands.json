@@ -1,20 +1,20 @@
 [
 {
   "directory": "/Users/mreid/projects/SerialDriver/build",
-  "command": "/opt/homebrew/bin/aarch64-apple-darwin25-gcc-15  -I/Users/mreid/projects/SerialDriver/include -g -std=gnu99 -arch arm64 -o CMakeFiles/SerialDriver.dir/main.c.o -c /Users/mreid/projects/SerialDriver/main.c",
-  "file": "/Users/mreid/projects/SerialDriver/main.c",
-  "output": "CMakeFiles/SerialDriver.dir/main.c.o"
+  "command": "/opt/homebrew/bin/aarch64-apple-darwin25-gcc-15  -I/Users/mreid/projects/SerialDriver/inc -g -std=gnu99 -arch arm64 -o CMakeFiles/SerialDriver.dir/src/main.c.o -c /Users/mreid/projects/SerialDriver/src/main.c",
+  "file": "/Users/mreid/projects/SerialDriver/src/main.c",
+  "output": "CMakeFiles/SerialDriver.dir/src/main.c.o"
 },
 {
   "directory": "/Users/mreid/projects/SerialDriver/build",
-  "command": "/opt/homebrew/bin/aarch64-apple-darwin25-gcc-15  -I/Users/mreid/projects/SerialDriver/include -g -std=gnu99 -arch arm64 -o CMakeFiles/SerialDriver.dir/SerialDriver.c.o -c /Users/mreid/projects/SerialDriver/SerialDriver.c",
-  "file": "/Users/mreid/projects/SerialDriver/SerialDriver.c",
-  "output": "CMakeFiles/SerialDriver.dir/SerialDriver.c.o"
+  "command": "/opt/homebrew/bin/aarch64-apple-darwin25-gcc-15  -I/Users/mreid/projects/SerialDriver/inc -g -std=gnu99 -arch arm64 -o CMakeFiles/SerialDriver.dir/src/SerialDriver.c.o -c /Users/mreid/projects/SerialDriver/src/SerialDriver.c",
+  "file": "/Users/mreid/projects/SerialDriver/src/SerialDriver.c",
+  "output": "CMakeFiles/SerialDriver.dir/src/SerialDriver.c.o"
 },
 {
   "directory": "/Users/mreid/projects/SerialDriver/build",
-  "command": "/opt/homebrew/bin/aarch64-apple-darwin25-gcc-15  -I/Users/mreid/projects/SerialDriver/include -g -std=gnu99 -arch arm64 -o CMakeFiles/SerialDriver.dir/circular_buffer.c.o -c /Users/mreid/projects/SerialDriver/circular_buffer.c",
-  "file": "/Users/mreid/projects/SerialDriver/circular_buffer.c",
-  "output": "CMakeFiles/SerialDriver.dir/circular_buffer.c.o"
+  "command": "/opt/homebrew/bin/aarch64-apple-darwin25-gcc-15  -I/Users/mreid/projects/SerialDriver/inc -g -std=gnu99 -arch arm64 -o CMakeFiles/SerialDriver.dir/src/circular_buffer.c.o -c /Users/mreid/projects/SerialDriver/src/circular_buffer.c",
+  "file": "/Users/mreid/projects/SerialDriver/src/circular_buffer.c",
+  "output": "CMakeFiles/SerialDriver.dir/src/circular_buffer.c.o"
 }
 ]
