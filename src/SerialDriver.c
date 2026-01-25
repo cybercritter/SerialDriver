@@ -173,7 +173,6 @@ void serial_driver_init(SerialDriver* driver) {
 uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t length) {
   volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
   volatile uint8_t* thr = port + SERIAL_PORT_OFFSET_THR;
-  // const volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
   uint32_t written = 0;
 
   if (length == 0) {
@@ -200,9 +199,8 @@ uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t
 }
 
 uint32_t serial_driver_read(SerialDriver* driver, uint8_t* buffer, uint32_t length) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
+  const volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
   volatile uint8_t* rbr = port + SERIAL_PORT_OFFSET_RBR;
-  // const volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
   uint32_t total_decoded = 0;
   if (length == 0) {
     return 0;
@@ -292,8 +290,8 @@ bool serial_driver_transmitter_empty(const SerialDriver* driver) {
 }
 
 bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
-  volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
+  const volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
+  const volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
   uint32_t elapsed = 0;
   const uint32_t poll_interval_ms = 1;
   struct timespec poll_interval;
