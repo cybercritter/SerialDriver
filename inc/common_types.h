@@ -1,3 +1,41 @@
+/**
+ * @file common_types.h
+ * @brief Common type definitions and constants for serial port driver
+ * 
+ * This header file defines register offsets, status flags, and type definitions
+ * used throughout the serial driver implementation. It provides support for
+ * standard UART/serial port register access with both normal and DLAB
+ * (Divisor Latch Access Bit) modes.
+ * 
+ * @details
+ * Register Offsets:
+ * - RBR (0x0): Receiver Buffer Register - read-only, contains received data
+ * - THR (0x0): Transmitter Holding Register - write-only, holds data to transmit
+ * - IER (0x1): Interrupt Enable Register - controls which interrupts are enabled
+ * - IIR (0x2): Interrupt Identification Register - read-only, identifies interrupt source
+ * - FCR (0x2): FIFO Control Register - write-only, controls FIFO behavior
+ * - LCR (0x3): Line Control Register - controls data bits, parity, stop bits, DLAB
+ * - MCR (0x4): Modem Control Register - controls modem signals
+ * - LSR (0x5): Line Status Register - contains transmission and reception status flags
+ * - MSR (0x6): Modem Status Register - contains modem signal states
+ * - SCR (0x7): Scratch Register - general purpose register for driver use
+ * - DLL (0x0): Divisor Latch Low - accessible when DLAB bit is set in LCR
+ * - DLH (0x1): Divisor Latch High - accessible when DLAB bit is set in LCR
+ * 
+ * Status Flags:
+ * - DATA_READY (0x01): Indicates data is available in the receiver buffer
+ * - THR_EMPTY (0x20): Indicates transmitter holding register is empty
+ * 
+ * Frame Control:
+ * - FLAG (0x7E): Frame delimiter/synchronization marker
+ * - ESCAPE (0x7D): Escape character for special byte sequences
+ * - ESCAPE_XOR (0x20): XOR mask applied to escaped bytes
+ * 
+ * @note Legacy aliases are provided for backward compatibility with older code
+ * @note The DLL and DLH registers share addresses with other registers and are
+ *       only accessible when the DLAB bit in the LCR is set
+ */
+ 
 #ifndef COMMON_TYPES_H
 #define COMMON_TYPES_H
 
