@@ -292,8 +292,7 @@ bool serial_driver_transmitter_empty(const SerialDriver* driver) {
 bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms) {
   const volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
   const volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
-  const volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
-  const volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
+
   uint32_t elapsed = 0;
   const uint32_t poll_interval_ms = 1;
   struct timespec poll_interval;
