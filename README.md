@@ -1,7 +1,5 @@
 # Serial Driver
-# Serial Driver
 
-## SonarCloud Status
 ## SonarCloud Status
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=bugs)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)

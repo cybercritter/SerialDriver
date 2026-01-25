@@ -154,11 +154,7 @@ static uint32_t store_decoded_bytes(SerialDriver* driver, uint8_t* buffer, uint3
 void serial_driver_init(SerialDriver* driver) {
   driver->discrete_mode = MODE_OFF;
   driver->loopback_mode = MODE_OFF;
-
-  // SERIAL_PORT_BASE = (uint32_t*) alloc(256); // Example allocation, replace
-  // with actual port base address as needed
-
-  driver->UARTbase = (uint8_t*)(uintptr_t)malloc(256 * (sizeof(uint8_t)));
+  driver->UARTbase = (uint8_t*)(uintptr_t)SERIAL_DRIVER_UART_BASE;
 
   volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
 
@@ -184,7 +180,7 @@ uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t
     return 0;
   }
 
-  enum { kChunk = 64 };
+  enum { kChunk = SERIAL_DRIVER_CHUNK_SIZE };
   uint8_t encoded[kChunk * 2];
   uint32_t offset = 0;
   while (offset < length) {
@@ -212,7 +208,7 @@ uint32_t serial_driver_read(SerialDriver* driver, uint8_t* buffer, uint32_t leng
     return 0;
   }
 
-  enum { kChunk = 64 };
+  enum { kChunk = SERIAL_DRIVER_CHUNK_SIZE };
   uint8_t raw[kChunk + 1];
   uint8_t decoded[kChunk];
   uint8_t carry_escape = 0;
@@ -253,7 +249,7 @@ void serial_driver_close(SerialDriver* driver) {
   cb_reset(&driver->tx_cb);
   cb_reset(&driver->rx_cb);
 
-  free(driver->UARTbase);
+  /* UART base is a fixed memory-mapped address on target hardware. */
   driver->UARTbase = NULL;
 }
 

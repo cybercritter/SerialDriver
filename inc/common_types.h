@@ -67,4 +67,6 @@ enum { FLAG = 0x7E, ESCAPE = 0x7D, ESCAPE_XOR = 0x20 };
 
 typedef enum { MODE_OFF = 0, MODE_ON = 1 } status_t;
 
+#define SERIAL_DRIVER_CHUNK_SIZE 255u
+
 #endif  // TYPES_H

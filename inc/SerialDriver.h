@@ -11,6 +11,10 @@
 #define SERIAL_DRIVER_TX_BUFFER_SIZE 256
 #define SERIAL_DRIVER_RX_BUFFER_SIZE 256
 
+#ifndef SERIAL_DRIVER_UART_BASE
+#define SERIAL_DRIVER_UART_BASE 0x40004400u /* USART2 base on STM32F411 */
+#endif
+
 typedef struct SerialDriver {
   uint8_t* UARTbase;
   status_t loopback_mode;
