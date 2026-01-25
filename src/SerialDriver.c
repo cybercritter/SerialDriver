@@ -200,7 +200,7 @@ uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t
 
 uint32_t serial_driver_read(SerialDriver* driver, uint8_t* buffer, uint32_t length) {
   const volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
-  constvolatile uint8_t* rbr = port + SERIAL_PORT_OFFSET_RBR;
+  const volatile uint8_t* rbr = port + SERIAL_PORT_OFFSET_RBR;
   uint32_t total_decoded = 0;
   if (length == 0) {
     return 0;
