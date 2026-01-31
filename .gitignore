@@ -59,4 +59,13 @@ dkms.conf
 *.idx
 bin/demo_serial_driver
 
-build/**
+# CMake build directory
+**/build/**
+cmake.cache
+cmakefiles.txt
+cmakebuild.log
+cmake_install.cmake 
+Makefile
+
+# VS Code settings
+.vscode/
