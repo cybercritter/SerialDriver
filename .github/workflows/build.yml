@@ -1,14 +1,21 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on multiple platforms
+name: build
 
 on:
+  # Trigger analysis when pushing to your main branches, and when creating a pull request.
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+      - master
+      - develop
+      - 'releases/**'
   pull_request:
-    branches: [ "main" ]
+      types: [opened, synchronize, reopened]
 
 jobs:
+  
+  
   build:
     runs-on: ${{ matrix.os }}
 
@@ -63,3 +70,15 @@ jobs:
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }}
+
+  sonarqube:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+          with:
+            # Disabling shallow clones is recommended for improving the relevancy of reporting
+            fetch-depth: 0
+        - name: SonarQube Scan
+          uses: SonarSource/sonarqube-scan-action@v4.1.0 # Ex: v4.1.0 or sha1, See the latest version at https://github.com/marketplace/actions/official-sonarqube-scan
+          env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
