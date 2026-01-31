@@ -70,7 +70,6 @@ jobs:
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }}
-
   sonarqube:
       runs-on: ubuntu-latest
       steps:
@@ -79,6 +78,6 @@ jobs:
             # Disabling shallow clones is recommended for improving the relevancy of reporting
             fetch-depth: 0
         - name: SonarQube Scan
-          uses: SonarSource/sonarqube-scan-action@v4.1.0 # Ex: v4.1.0 or sha1, See the latest version at https://github.com/marketplace/actions/official-sonarqube-scan
+          uses: SonarSource/sonarqube-scan-action@v7.0.0
           env:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
