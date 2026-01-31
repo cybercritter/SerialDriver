@@ -6,6 +6,7 @@
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=cybercritter_SerialDriver&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=cybercritter_SerialDriver)
 [![wakatime](https://wakatime.com/badge/user/fc6ec941-b731-4418-934e-aa341fe867eb/project/4a49c825-9c8a-47ff-b093-db5086d37cd9.svg)](https://wakatime.com/badge/user/fc6ec941-b731-4418-934e-aa341fe867eb/project/4a49c825-9c8a-47ff-b093-db5086d37cd9)
+[![build](https://github.com/cybercritter/SerialDriver/actions/workflows/build.yml/badge.svg)](https://github.com/cybercritter/SerialDriver/actions/workflows/build.yml)
 
 ## Overview
 SerialDriver is a C library that implements a memory-mapped UART driver with
