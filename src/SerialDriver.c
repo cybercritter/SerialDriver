@@ -262,7 +262,7 @@ static uint32_t store_decoded_bytes(SerialDriver* driver, uint8_t* buffer, uint3
 void serial_driver_init(SerialDriver* driver) {
   driver->discrete_mode = MODE_OFF;
   driver->loopback_mode = MODE_OFF;
-  driver->UARTbase = (uint8_t*)(uintptr_t)SERIAL_DRIVER_UART_BASE;
+  // driver->UARTbase = (uint8_t*)(uintptr_t)SERIAL_DRIVER_UART_BASE;
 
   volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
 
@@ -480,16 +480,6 @@ bool serial_driver_transmitter_empty(const SerialDriver* driver) {
   return ((*lsr & SERIAL_PORT_STATUS_THR_EMPTY) != 0);
 }
 
-<<<<<<< Updated upstream
-bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms) {
-  const volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
-  const volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
-
-||||||| Stash base
-bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
-  volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
-=======
 /**
  * @brief Waits for the Transmit Holding Register (THR) to become empty.
  *
@@ -502,7 +492,7 @@ bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms) {
 static bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms) {
   volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
   volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
->>>>>>> Stashed changes
+
   uint32_t elapsed = 0;
   const uint32_t poll_interval_ms = 1;
   struct timespec poll_interval;
