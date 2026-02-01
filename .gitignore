@@ -69,3 +69,12 @@ Makefile
 
 # VS Code settings
 .vscode/
+
+# gcov coverage files
+build-coverage/**
+build-cov/**
+*.gcno
+*.gcda
+*.gcov
+*.gcovrc
+coverage.xml    

@@ -14,32 +14,21 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_PREFIX_PATH "/opt/homebrew/opt/llvm")
 
-include(CTest)
+include(CTest) # enables ctest targets & testing
 enable_testing()
 
-option(ENABLE_COVERAGE "Enable coverage instrumentation (GCC/Clang)" OFF)
-if(ENABLE_COVERAGE)
-  if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    add_compile_options(-O0 -g --coverage)
-    add_link_options(--coverage)
-    find_program(LCOV_EXECUTABLE lcov)
-    find_program(GENHTML_EXECUTABLE genhtml)
-    if(LCOV_EXECUTABLE AND GENHTML_EXECUTABLE)
-      add_custom_target(coverage
-        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-        COMMAND ${LCOV_EXECUTABLE} --capture --directory . --output-file coverage.info
-        COMMAND ${LCOV_EXECUTABLE} --remove coverage.info '/usr/*' '*/third_party/*' --output-file coverage.info
-        COMMAND ${GENHTML_EXECUTABLE} coverage.info --output-directory coverage-report
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Running tests and generating coverage report"
-      )
-    else()
-      message(STATUS "Coverage target disabled (lcov/genhtml not found).")
-    endif()
-  else()
-    message(WARNING "Coverage is only supported for GCC/Clang; ENABLE_COVERAGE ignored.")
-  endif()
-endif()
+include(cmake/Coverage.cmake)
+
+# Apply coverage flags if enabled
+enable_coverage_flags()
+
+# Overall coverage target: `ninja coverage` / `make coverage`
+add_coverage_target(coverage)
+
+# Per-target coverage (by CTest label)
+# Example: `ninja coverage-my_lib` / `make coverage-my_lib`
+add_coverage_target(coverage-my_lib LABEL my_lib)
+add_coverage_target(coverage-my_app LABEL my_app)
 
 add_subdirectory(src)
 add_subdirectory(tests)
