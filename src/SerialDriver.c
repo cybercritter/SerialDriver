@@ -522,22 +522,22 @@ bool serial_driver_transmitter_empty(const SerialDriver* driver) {
  * @return true if the THR becomes empty within the timeout, false otherwise.
  */
 static bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms) {
-  volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
-  volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
+  // volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
+  // volatile uint8_t* lsr = port + SERIAL_PORT_OFFSET_LSR;
 
-  uint32_t elapsed = 0;
-  const uint32_t poll_interval_ms = 1;
-  struct timespec poll_interval;
-  poll_interval.tv_sec = poll_interval_ms / 1000u;
-  poll_interval.tv_nsec = (long)(poll_interval_ms % 1000u) * 1000000L;
+  // uint32_t elapsed = 0;
+  // const uint32_t poll_interval_ms = 1;
+  // struct timespec poll_interval;
+  // poll_interval.tv_sec = poll_interval_ms / 1000u;
+  // poll_interval.tv_nsec = (long)(poll_interval_ms % 1000u) * 1000000L;
 
-  while (elapsed < timeout_ms) {
-    if ((*lsr & SERIAL_PORT_STATUS_THR_EMPTY) != 0) {
-      return true;
-    }
-    nanosleep(&poll_interval, NULL);
-    elapsed += poll_interval_ms;
-  }
+  // while (elapsed < timeout_ms) {
+  //   if ((*lsr & SERIAL_PORT_STATUS_THR_EMPTY) != 0) {
+  //     return true;
+  //   }
+  //   nanosleep(&poll_interval, NULL);
+  //   elapsed += poll_interval_ms;
+  // }
 
   return false;
 }
