@@ -262,7 +262,6 @@ static uint32_t store_decoded_bytes(SerialDriver* driver, uint8_t* buffer, uint3
 void serial_driver_init(SerialDriver* driver) {
   driver->discrete_mode = MODE_OFF;
   driver->loopback_mode = MODE_OFF;
-  // driver->UARTbase = (uint8_t*)(uintptr_t)SERIAL_DRIVER_UART_BASE;
 
   volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
 
