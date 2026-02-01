@@ -72,3 +72,28 @@ jobs:
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }}
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install coverage tools
+      run: sudo apt-get update && sudo apt-get install -y lcov
+
+    - name: Configure CMake (coverage)
+      run: >
+        cmake -B build
+        -DCMAKE_CXX_COMPILER=g++
+        -DCMAKE_C_COMPILER=gcc
+        -DCMAKE_BUILD_TYPE=Debug
+        -DENABLE_COVERAGE=ON
+        -S ${{ github.workspace }}
+
+    - name: Build (coverage)
+      run: cmake --build build
+
+    - name: Coverage report
+      run: cmake --build build --target coverage
