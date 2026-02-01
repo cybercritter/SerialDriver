@@ -10,6 +10,13 @@
 static bool serial_driver_data_available(const SerialDriver* driver);
 static bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms);
 
+static SerialDriver g_drivers[SERIAL_DRIVER_PORT_COUNT];
+static uint8_t* g_uart_bases[SERIAL_DRIVER_PORT_COUNT];
+
+static bool serial_port_valid(serial_port_t port) {
+  return port >= SERIAL_PORT_0 && port < SERIAL_DRIVER_PORT_COUNT;
+}
+
 /**
  * @brief Encodes a buffer of data using a specified encoding scheme.
  *
@@ -275,6 +282,32 @@ void serial_driver_init(SerialDriver* driver) {
 
   cb_init(&driver->tx_cb, driver->tx_storage, SERIAL_DRIVER_TX_BUFFER_SIZE);
   cb_init(&driver->rx_cb, driver->rx_storage, SERIAL_DRIVER_RX_BUFFER_SIZE);
+}
+
+bool serial_driver_register_port(serial_port_t port, uint8_t* base) {
+  if (!serial_port_valid(port) || base == NULL) {
+    return false;
+  }
+  g_uart_bases[port] = base;
+  return true;
+}
+
+SerialDriver* serial_driver_get(serial_port_t port) {
+  if (!serial_port_valid(port)) {
+    return NULL;
+  }
+  return &g_drivers[port];
+}
+
+bool serial_driver_init_port(serial_port_t port) {
+  if (!serial_port_valid(port) || g_uart_bases[port] == NULL) {
+    return false;
+  }
+
+  SerialDriver* driver = &g_drivers[port];
+  driver->UARTbase = g_uart_bases[port];
+  serial_driver_init(driver);
+  return true;
 }
 
 /**

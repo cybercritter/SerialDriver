@@ -10,6 +10,18 @@
 
 #define SERIAL_DRIVER_TX_BUFFER_SIZE 256
 #define SERIAL_DRIVER_RX_BUFFER_SIZE 256
+#define SERIAL_DRIVER_PORT_COUNT 8
+
+typedef enum {
+  SERIAL_PORT_0 = 0,
+  SERIAL_PORT_1,
+  SERIAL_PORT_2,
+  SERIAL_PORT_3,
+  SERIAL_PORT_4,
+  SERIAL_PORT_5,
+  SERIAL_PORT_6,
+  SERIAL_PORT_7
+} serial_port_t;
 
 /**
  * @struct SerialDriver
@@ -46,6 +58,9 @@ typedef struct SerialDriver {
  * @param driver Pointer to the SerialDriver instance to initialize.
  */
 void serial_driver_init(SerialDriver* driver);
+bool serial_driver_register_port(serial_port_t port, uint8_t* base);
+SerialDriver* serial_driver_get(serial_port_t port);
+bool serial_driver_init_port(serial_port_t port);
 /**
  * @brief Writes data to the specified serial driver.
  *
