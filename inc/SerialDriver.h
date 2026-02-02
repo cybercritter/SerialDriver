@@ -23,6 +23,10 @@ typedef enum {
   SERIAL_PORT_7
 } serial_port_t;
 
+typedef int32_t serial_descriptor_t;
+
+#define SERIAL_DESCRIPTOR_INVALID ((serial_descriptor_t)-1)
+
 /**
  * @struct SerialDriver
  * @brief Structure for managing UART serial communication with buffering capabilities
@@ -45,33 +49,25 @@ typedef struct SerialDriver {
   status_t discrete_mode;
   circular_buffer_t tx_cb;
   circular_buffer_t rx_cb;
-  uint8_t tx_storage[SERIAL_DRIVER_TX_BUFFER_SIZE];
-  uint8_t rx_storage[SERIAL_DRIVER_RX_BUFFER_SIZE];
+  uint32_t tx_storage[SERIAL_DRIVER_TX_BUFFER_SIZE];
+  uint32_t rx_storage[SERIAL_DRIVER_RX_BUFFER_SIZE];
 } SerialDriver;
 
-/**
- * @brief Initializes the specified SerialDriver instance.
- *
- * This function sets up the SerialDriver structure and prepares it for use.
- * It should be called before any other operations are performed on the driver.
- *
- * @param driver Pointer to the SerialDriver instance to initialize.
- */
-void serial_driver_init(SerialDriver* driver);
+
 bool serial_driver_register_port(serial_port_t port, uint8_t* base);
-SerialDriver* serial_driver_get(serial_port_t port);
-bool serial_driver_init_port(serial_port_t port);
+serial_descriptor_t serial_driver_open(serial_port_t port);
+SerialDriver* serial_driver_get(serial_descriptor_t descriptor);
 /**
  * @brief Writes data to the specified serial driver.
  *
  * This function transmits a sequence of bytes from the provided buffer through the given SerialDriver instance.
  *
- * @param driver Pointer to the SerialDriver instance to which data will be written.
+ * @param descriptor Serial descriptor for the driver instance to which data will be written.
  * @param buffer Pointer to the buffer containing the data to be written.
  * @param length Number of bytes to write from the buffer.
  * @return The number of bytes successfully written, or 0 if an error occurred.
  */
-uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t length);
+uint32_t serial_driver_write(serial_descriptor_t descriptor, const uint8_t* buffer, size_t length);
 /**
  * @brief Reads data from the specified serial driver into a buffer.
  *
@@ -79,12 +75,12 @@ uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t
  * and stores the data in the provided 'buffer'. The actual number of bytes
  * read may be less than 'length' if fewer bytes are available.
  *
- * @param driver Pointer to the SerialDriver instance to read from.
+ * @param descriptor Serial descriptor for the driver instance to read from.
  * @param buffer Pointer to the buffer where the read data will be stored.
  * @param length Maximum number of bytes to read.
  * @return The number of bytes actually read from the serial driver.
  */
-uint32_t serial_driver_read(SerialDriver* driver, uint8_t* buffer, uint32_t length);
+uint32_t serial_driver_read(serial_descriptor_t descriptor, uint8_t* buffer, uint32_t length);
 /**
  * @brief Closes the specified serial driver and releases any associated resources.
  *
@@ -92,18 +88,18 @@ uint32_t serial_driver_read(SerialDriver* driver, uint8_t* buffer, uint32_t leng
  * ensuring that all resources such as file descriptors or handles are properly released.
  * After calling this function, the SerialDriver instance should not be used unless re-initialized.
  *
- * @param driver Pointer to the SerialDriver instance to be closed.
+ * @param descriptor Serial descriptor for the driver instance to be closed.
  */
-void serial_driver_close(SerialDriver* driver);
+void serial_driver_close(serial_descriptor_t descriptor);
 /**
  * @brief Sets the discrete mode of the specified SerialDriver instance.
  *
  * This function configures the given SerialDriver to operate in the specified discrete mode.
  *
- * @param driver Pointer to the SerialDriver instance to configure.
+ * @param descriptor Serial descriptor for the driver instance to configure.
  * @param mode The discrete mode to set for the driver.
  */
-void serial_driver_set_discrete(SerialDriver* driver, status_t mode);
+void serial_driver_set_discrete(serial_descriptor_t descriptor, status_t mode);
 /**
  * @brief Sets the loopback mode for the specified SerialDriver instance.
  *
@@ -111,20 +107,20 @@ void serial_driver_set_discrete(SerialDriver* driver, status_t mode);
  * When loopback mode is enabled, data sent to the driver is immediately received back,
  * which is useful for testing and diagnostics.
  *
- * @param driver Pointer to the SerialDriver instance to configure.
+ * @param descriptor Serial descriptor for the driver instance to configure.
  * @param mode   The desired loopback mode (typically enable or disable).
  */
-void serial_driver_set_loopback(SerialDriver* driver, status_t mode);
+void serial_driver_set_loopback(serial_descriptor_t descriptor, status_t mode);
 /**
  * @brief Checks if loopback mode is enabled for the specified serial driver.
  *
  * Loopback mode is typically used for testing purposes, where transmitted data is
  * internally routed back to the receiver without leaving the device.
  *
- * @param driver Pointer to the SerialDriver instance to check.
+ * @param descriptor Serial descriptor for the driver instance to check.
  * @return true if loopback mode is enabled, false otherwise.
  */
-bool serial_driver_loopback_enabled(const SerialDriver* driver);
+bool serial_driver_loopback_enabled(serial_descriptor_t descriptor);
 /**
  * @brief Checks if the discrete mode is enabled for the specified serial driver.
  *
@@ -133,9 +129,23 @@ bool serial_driver_loopback_enabled(const SerialDriver* driver);
  * mode of the serial driver, such as handling data in discrete packets
  * rather than a continuous stream.
  *
- * @param driver Pointer to the SerialDriver instance to query.
+ * @param descriptor Serial descriptor for the driver instance to query.
  * @return true if discrete mode is enabled, false otherwise.
  */
-bool serial_driver_discrete_enabled(const SerialDriver* driver);
+bool serial_driver_discrete_enabled(serial_descriptor_t descriptor);
+/**
+ * @brief Checks if there is data available to read from the serial driver's receive buffer.
+ *
+ * @param descriptor Serial descriptor for the driver instance to query.
+ * @return true if data is available to read; false otherwise.
+ */
+bool serial_driver_data_available(serial_descriptor_t descriptor);
+/**
+ * @brief Checks if the serial driver's transmitter is empty.
+ *
+ * @param descriptor Serial descriptor for the driver instance to query.
+ * @return true if the transmitter is empty, false otherwise.
+ */
+bool serial_driver_transmitter_empty(serial_descriptor_t descriptor);
 
 #endif

@@ -68,7 +68,7 @@ cmake_install.cmake
 Makefile
 
 # VS Code settings
-.vscode/
+.vscode/    
 
 # gcov coverage files
 build-coverage/**

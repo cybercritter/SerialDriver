@@ -1,0 +1,16 @@
+Findings (SerialDriver.c)
+
+High
+- wait_for_thr_empty() is stubbed to always return false, but callers ignore the return and proceed to read/write registers. This can break timing and cause hangs or data loss on real hardware. Lines: src/SerialDriver.c:134-191, 227-259, 624-642
+- TX path treats encoded bytes as uint32_t words: queue_encoded_bytes()/flush_tx_when_full() push/pop uint32_t, then write only the low byte to THR. It also multiplies written by 4, inflating byte counts. This likely corrupts output and reports incorrect lengths. Lines: src/SerialDriver.c:134-166, 392-405
+- serial_driver_read() can loop indefinitely if no data arrives because it loops until length is satisfied and read_raw_from_port() waits on a non-functional wait_for_thr_empty(). No timeout/exit on empty port. Lines: src/SerialDriver.c:441-460, 238-252, 624-642
+
+Medium
+- Descriptor table init uses SERIAL_PORT_0 as a sentinel in g_descriptor_ports, which is a valid port. After close/reuse, the stored port id is ambiguous for debugging/cleanup. Lines: src/SerialDriver.c:31-37, 494-499
+- serial_driver_register_port() can overwrite g_uart_bases[port] after a descriptor has been allocated. serial_driver_open() returns the existing descriptor without reinitializing, potentially leaving the driver bound to a stale base. Lines: src/SerialDriver.c:320-359
+
+Low
+- API entry points (e.g., serial_driver_write/read) call serial_driver_from_descriptor() without ensuring descriptor tables were initialized. If a caller uses them without any prior register/open/get call, descriptors may be treated as unused. Lines: src/SerialDriver.c:41-51, 378-380
+
+Notes
+- Assumes the TX/RX paths are intended to be byte-oriented (THR is 8-bit). If 32-bit packing is intentional, documentation/tests should reflect that and THR writes should be adjusted accordingly.

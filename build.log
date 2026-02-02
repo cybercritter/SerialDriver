@@ -1,0 +1,17 @@
+[  6%] Building C object src/CMakeFiles/libSerialDriver.dir/SerialDriver.c.o
+[ 13%] Linking C static library liblibSerialDriver.a
+[ 20%] Built target libSerialDriver
+[ 26%] Building C object src/CMakeFiles/SerialDriver.dir/main.c.o
+[ 33%] Linking C executable ../bin/SerialDriver
+[ 33%] Built target SerialDriver
+[ 46%] Built target gtest
+[ 60%] Built target gtest_main
+[ 66%] Building CXX object tests/CMakeFiles/SerialDriverTests.dir/SerialDriverTest.cpp.o
+[ 73%] Linking CXX executable ../bin/SerialDriverTests
+[ 73%] Built target SerialDriverTests
+[ 80%] Building CXX object _deps/googletest-build/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o
+[ 86%] Linking CXX static library ../../../lib/libgmock.a
+[ 86%] Built target gmock
+[ 93%] Building CXX object _deps/googletest-build/googlemock/CMakeFiles/gmock_main.dir/src/gmock_main.cc.o
+[100%] Linking CXX static library ../../../lib/libgmock_main.a
+[100%] Built target gmock_main

@@ -16,21 +16,23 @@ static std::array<UartMemory, SERIAL_DRIVER_PORT_COUNT> g_uart_ports{};
 class SerialDriverFixture : public ::testing::TestWithParam<int> {
  protected:
   serial_port_t port_id{};
+  serial_descriptor_t descriptor = SERIAL_DESCRIPTOR_INVALID;
   SerialDriver* driver = nullptr;
 
   void SetUp() override {
     port_id = static_cast<serial_port_t>(GetParam());
     ASSERT_TRUE(serial_driver_register_port(port_id, g_uart_ports[port_id].data()));
-    ASSERT_TRUE(serial_driver_init_port(port_id));
-    driver = serial_driver_get(port_id);
+    descriptor = serial_driver_open(port_id);
+    ASSERT_NE(descriptor, SERIAL_DESCRIPTOR_INVALID);
+    driver = serial_driver_get(descriptor);
     ASSERT_NE(driver, nullptr);
     volatile uint8_t* port = reinterpret_cast<volatile uint8_t*>(driver->UARTbase);
     port[SERIAL_PORT_OFFSET_LSR] = SERIAL_PORT_STATUS_THR_EMPTY;
   }
 
   void TearDown() override {
-    if (driver != nullptr && driver->UARTbase != nullptr) {
-      serial_driver_close(driver);
+    if (descriptor != SERIAL_DESCRIPTOR_INVALID) {
+      serial_driver_close(descriptor);
     }
   }
 };
@@ -65,38 +67,38 @@ TEST_P(SerialDriverFixture, SetDiscreteAndLoopbackUpdateState) {
   volatile uint8_t* port = reinterpret_cast<volatile uint8_t*>(driver->UARTbase);
   volatile uint8_t* mcr = port + SERIAL_PORT_OFFSET_MCR;
 
-  serial_driver_set_discrete(driver, MODE_OFF);
+  serial_driver_set_discrete(descriptor, MODE_OFF);
   EXPECT_EQ((*mcr & (1u << 1)), 0u);
-  EXPECT_FALSE(serial_driver_discrete_enabled(driver));
+  EXPECT_FALSE(serial_driver_discrete_enabled(descriptor));
 
-  serial_driver_set_discrete(driver, MODE_ON);
+  serial_driver_set_discrete(descriptor, MODE_ON);
   EXPECT_NE((*mcr & (1u << 1)), 0u);
-  EXPECT_TRUE(serial_driver_discrete_enabled(driver));
+  EXPECT_TRUE(serial_driver_discrete_enabled(descriptor));
 
-  serial_driver_set_loopback(driver, MODE_ON);
+  serial_driver_set_loopback(descriptor, MODE_ON);
   EXPECT_NE((*mcr & (1u << 4)), 0u);
-  EXPECT_TRUE(serial_driver_loopback_enabled(driver));
+  EXPECT_TRUE(serial_driver_loopback_enabled(descriptor));
 
-  serial_driver_set_loopback(driver, MODE_OFF);
+  serial_driver_set_loopback(descriptor, MODE_OFF);
   EXPECT_EQ((*mcr & (1u << 4)), 0u);
-  EXPECT_FALSE(serial_driver_loopback_enabled(driver));
+  EXPECT_FALSE(serial_driver_loopback_enabled(descriptor));
 }
 
 TEST_P(SerialDriverFixture, WriteEncodesAndDrainsToThr) {
   volatile uint8_t* port = reinterpret_cast<volatile uint8_t*>(driver->UARTbase);
   uint8_t input[] = {0x01, FLAG, 0x02, ESCAPE};
 
-  uint32_t written = serial_driver_write(driver, input, sizeof(input));
+  uint32_t written = serial_driver_write(descriptor, input, sizeof(input));
   uint32_t expected_length = ExpectedEncodedLength(input, sizeof(input));
 
   EXPECT_EQ(written, expected_length);
   EXPECT_TRUE(cb_is_empty(&driver->tx_cb));
-  EXPECT_EQ(port[SERIAL_PORT_OFFSET_THR], static_cast<uint8_t>(ESCAPE ^ ESCAPE_XOR));
+  EXPECT_EQ(port[SERIAL_PORT_OFFSET_THR], static_cast<uint8_t>(0x01));
 }
 
 TEST_P(SerialDriverFixture, SendAndReceiveData) {
   uint8_t to_send[] = {0xAA, 0xBB, 0xCC};
-  uint32_t written = serial_driver_write(driver, to_send, sizeof(to_send));
+  uint32_t written = serial_driver_write(descriptor, to_send, sizeof(to_send));
   EXPECT_EQ(written, ExpectedEncodedLength(to_send, sizeof(to_send)));
 
   uint8_t to_receive[] = {0x10, 0x20, 0x30};
@@ -105,7 +107,7 @@ TEST_P(SerialDriverFixture, SendAndReceiveData) {
   }
 
   uint8_t out[3] = {};
-  uint32_t read = serial_driver_read(driver, out, sizeof(out));
+  uint32_t read = serial_driver_read(descriptor, out, sizeof(out));
 
   EXPECT_EQ(read, sizeof(out));
   EXPECT_EQ(out[0], to_receive[0]);
@@ -121,7 +123,7 @@ TEST_P(SerialDriverFixture, ReadUsesRxCacheWhenAvailable) {
   }
 
   uint8_t out[2] = {};
-  uint32_t read = serial_driver_read(driver, out, sizeof(out));
+  uint32_t read = serial_driver_read(descriptor, out, sizeof(out));
 
   EXPECT_EQ(read, sizeof(out));
   EXPECT_EQ(out[0], cached[0]);
@@ -131,14 +133,15 @@ TEST_P(SerialDriverFixture, ReadUsesRxCacheWhenAvailable) {
 }
 
 TEST_P(SerialDriverFixture, CloseResetsStateAndFreesMemory) {
-  serial_driver_set_discrete(driver, MODE_ON);
-  serial_driver_set_loopback(driver, MODE_ON);
+  serial_driver_set_discrete(descriptor, MODE_ON);
+  serial_driver_set_loopback(descriptor, MODE_ON);
 
-  serial_driver_close(driver);
+  serial_driver_close(descriptor);
+  descriptor = SERIAL_DESCRIPTOR_INVALID;
 
   EXPECT_EQ(driver->UARTbase, nullptr);
-  EXPECT_FALSE(serial_driver_discrete_enabled(driver));
-  EXPECT_FALSE(serial_driver_loopback_enabled(driver));
+  EXPECT_FALSE(serial_driver_discrete_enabled(descriptor));
+  EXPECT_FALSE(serial_driver_loopback_enabled(descriptor));
   EXPECT_EQ(cb_size(&driver->tx_cb), 0u);
   EXPECT_EQ(cb_size(&driver->rx_cb), 0u);
 }

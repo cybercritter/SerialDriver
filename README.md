@@ -49,45 +49,52 @@ make clean
 #include "SerialDriver.h"
 
 int main(void) {
-  SerialDriver driver;
-  serial_driver_init(&driver);
+  uint8_t* uart_base = (uint8_t*)0x3F8;
+  if (!serial_driver_register_port(SERIAL_PORT_0, uart_base)) {
+    return 1;
+  }
 
-  serial_driver_set_discrete(&driver, MODE_ON);
-  serial_driver_set_loopback(&driver, MODE_ON);
+  serial_descriptor_t descriptor = serial_driver_open(SERIAL_PORT_0);
+  if (descriptor == SERIAL_DESCRIPTOR_INVALID) {
+    return 1;
+  }
+
+  serial_driver_set_discrete(descriptor, MODE_ON);
+  serial_driver_set_loopback(descriptor, MODE_ON);
 
   const char write_data[] = "Hello, Serial Port!";
-  serial_driver_write(&driver, (const uint8_t *)write_data, sizeof(write_data));
+  serial_driver_write(descriptor, (const uint8_t *)write_data, sizeof(write_data));
 
   uint8_t read_buffer[128];
-  serial_driver_read(&driver, read_buffer, sizeof(read_buffer));
+  serial_driver_read(descriptor, read_buffer, sizeof(read_buffer));
 
-  serial_driver_close(&driver);
+  serial_driver_close(descriptor);
   return 0;
 }
 ```
 
 ## API Reference
 ### Serial driver
-- `void serial_driver_init(SerialDriver* driver);`
-  - Initializes the UART registers and internal tx/rx buffers. Uses `malloc`
-    for a simulated UART base; replace with the actual base address for hardware.
-- `uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t length);`
+- `bool serial_driver_register_port(serial_port_t port, uint8_t* base);`
+  - Associates a UART base address with a port.
+- `serial_descriptor_t serial_driver_open(serial_port_t port);`
+  - Allocates a serial descriptor for the port and initializes the driver.
+- `uint32_t serial_driver_write(serial_descriptor_t descriptor, const uint8_t* buffer, size_t length);`
   - Encodes input with byte-stuffing and writes encoded bytes to the UART.
   - Returns the number of encoded bytes written (can be larger than `length`).
-- `uint32_t serial_driver_read(SerialDriver* driver, uint8_t* buffer, uint32_t length);`
+- `uint32_t serial_driver_read(serial_descriptor_t descriptor, uint8_t* buffer, uint32_t length);`
   - Reads raw bytes, decodes escapes, and returns decoded bytes up to `length`.
-- `void serial_driver_close(SerialDriver* driver);`
-  - Resets modem control, clears buffers, and frees the UART base.
-- `void serial_driver_set_discrete(SerialDriver* driver, status_t mode);`
+- `void serial_driver_close(serial_descriptor_t descriptor);`
+  - Resets modem control, clears buffers, and releases the descriptor.
+- `void serial_driver_set_discrete(serial_descriptor_t descriptor, status_t mode);`
   - Sets or clears MCR bit 1.
-- `void serial_driver_set_loopback(SerialDriver* driver, status_t mode);`
+- `void serial_driver_set_loopback(serial_descriptor_t descriptor, status_t mode);`
   - Sets or clears MCR bit 4.
-- `bool serial_driver_loopback_enabled(const SerialDriver* driver);`
-- `bool serial_driver_discrete_enabled(const SerialDriver* driver);`
-- `bool serial_driver_data_available(const SerialDriver* driver);`
+- `bool serial_driver_loopback_enabled(serial_descriptor_t descriptor);`
+- `bool serial_driver_discrete_enabled(serial_descriptor_t descriptor);`
+- `bool serial_driver_data_available(serial_descriptor_t descriptor);`
   - Returns true if the rx circular buffer is not empty.
-- `bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms);`
-  - Polls LSR for `SERIAL_PORT_STATUS_THR_EMPTY` with a millisecond timeout.
+- `bool serial_driver_transmitter_empty(serial_descriptor_t descriptor);`
 
 ### Circular buffer
 The circular buffer stores bytes and supports constant-time push/pop.
@@ -115,13 +122,13 @@ Example (hex):
 ### Byte stuffing and write
 ```c
 const uint8_t payload[] = {0x7E, 0x01, 0x7D, 0x02};
-uint32_t encoded_written = serial_driver_write(&driver, payload, sizeof(payload));
+uint32_t encoded_written = serial_driver_write(descriptor, payload, sizeof(payload));
 ```
 
 ### Read decoded bytes
 ```c
 uint8_t rx[64];
-uint32_t got = serial_driver_read(&driver, rx, sizeof(rx));
+uint32_t got = serial_driver_read(descriptor, rx, sizeof(rx));
 if (got > 0) {
   // rx contains decoded payload bytes.
 }
@@ -140,7 +147,8 @@ cb_pop(&cb, &out);
 
 ### UART register access
 ```c
-volatile uint8_t* port = (volatile uint8_t*)driver.UARTbase;
+SerialDriver* driver = serial_driver_get(descriptor);
+volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
 uint8_t line_status = port[SERIAL_PORT_OFFSET_LSR];
 ```
 
@@ -157,32 +165,32 @@ uint8_t line_status = port[SERIAL_PORT_OFFSET_LSR];
 
 ### STM32F411 (Nucleo-F411RE) Example
 ```c
-// Replace malloc-based UART base with the MCU's USART2 base.
+// Register the MCU's USART2 base and open a descriptor.
 // Requires STM32 CMSIS device headers for USART2 definition.
 #include "stm32f4xx.h"
 
 ## API Reference
 ### Serial driver
-- `void serial_driver_init(SerialDriver* driver);`
-  - Initializes the UART registers and internal tx/rx buffers. Uses `malloc`
-    for a simulated UART base; replace with the actual base address for hardware.
-- `uint32_t serial_driver_write(SerialDriver* driver, const uint8_t* buffer, size_t length);`
+- `bool serial_driver_register_port(serial_port_t port, uint8_t* base);`
+  - Associates a UART base address with a port.
+- `serial_descriptor_t serial_driver_open(serial_port_t port);`
+  - Allocates a serial descriptor for the port and initializes the driver.
+- `uint32_t serial_driver_write(serial_descriptor_t descriptor, const uint8_t* buffer, size_t length);`
   - Encodes input with byte-stuffing and writes encoded bytes to the UART.
   - Returns the number of encoded bytes written (can be larger than `length`).
-- `uint32_t serial_driver_read(SerialDriver* driver, uint8_t* buffer, uint32_t length);`
+- `uint32_t serial_driver_read(serial_descriptor_t descriptor, uint8_t* buffer, uint32_t length);`
   - Reads raw bytes, decodes escapes, and returns decoded bytes up to `length`.
-- `void serial_driver_close(SerialDriver* driver);`
-  - Resets modem control, clears buffers, and frees the UART base.
-- `void serial_driver_set_discrete(SerialDriver* driver, status_t mode);`
+- `void serial_driver_close(serial_descriptor_t descriptor);`
+  - Resets modem control, clears buffers, and releases the descriptor.
+- `void serial_driver_set_discrete(serial_descriptor_t descriptor, status_t mode);`
   - Sets or clears MCR bit 1.
-- `void serial_driver_set_loopback(SerialDriver* driver, status_t mode);`
+- `void serial_driver_set_loopback(serial_descriptor_t descriptor, status_t mode);`
   - Sets or clears MCR bit 4.
-- `bool serial_driver_loopback_enabled(const SerialDriver* driver);`
-- `bool serial_driver_discrete_enabled(const SerialDriver* driver);`
-- `bool serial_driver_data_available(const SerialDriver* driver);`
+- `bool serial_driver_loopback_enabled(serial_descriptor_t descriptor);`
+- `bool serial_driver_discrete_enabled(serial_descriptor_t descriptor);`
+- `bool serial_driver_data_available(serial_descriptor_t descriptor);`
   - Returns true if the rx circular buffer is not empty.
-- `bool wait_for_thr_empty(SerialDriver* driver, uint32_t timeout_ms);`
-  - Polls LSR for `SERIAL_PORT_STATUS_THR_EMPTY` with a millisecond timeout.
+- `bool serial_driver_transmitter_empty(serial_descriptor_t descriptor);`
 
 ### Circular buffer
 The circular buffer stores bytes and supports constant-time push/pop.
@@ -210,13 +218,13 @@ Example (hex):
 ### Byte stuffing and write
 ```c
 const uint8_t payload[] = {0x7E, 0x01, 0x7D, 0x02};
-uint32_t encoded_written = serial_driver_write(&driver, payload, sizeof(payload));
+uint32_t encoded_written = serial_driver_write(descriptor, payload, sizeof(payload));
 ```
 
 ### Read decoded bytes
 ```c
 uint8_t rx[64];
-uint32_t got = serial_driver_read(&driver, rx, sizeof(rx));
+uint32_t got = serial_driver_read(descriptor, rx, sizeof(rx));
 if (got > 0) {
   // rx contains decoded payload bytes.
 }
@@ -235,7 +243,8 @@ cb_pop(&cb, &out);
 
 ### UART register access
 ```c
-volatile uint8_t* port = (volatile uint8_t*)driver.UARTbase;
+SerialDriver* driver = serial_driver_get(descriptor);
+volatile uint8_t* port = (volatile uint8_t*)driver->UARTbase;
 uint8_t line_status = port[SERIAL_PORT_OFFSET_LSR];
 ```
 
@@ -252,13 +261,12 @@ uint8_t line_status = port[SERIAL_PORT_OFFSET_LSR];
 
 ### STM32F411 (Nucleo-F411RE) Example
 ```c
-// Replace malloc-based UART base with the MCU's USART2 base.
+// Register the MCU's USART2 base and open a descriptor.
 // Requires STM32 CMSIS device headers for USART2 definition.
 #include "stm32f4xx.h"
 
-SerialDriver driver;
-serial_driver_init(&driver);
-driver.UARTbase = (uint8_t*)USART2;
+serial_driver_register_port(SERIAL_PORT_0, (uint8_t*)USART2);
+serial_descriptor_t descriptor = serial_driver_open(SERIAL_PORT_0);
 
 // Ensure RCC clocking and GPIO alternate-function setup are enabled for USART2
 // before use (e.g., enable RCC_APB1ENR_USART2EN and configure GPIOA pins to AF7).
@@ -270,31 +278,8 @@ driver.UARTbase = (uint8_t*)USART2;
 - Set USART2 baud rate and frame format consistent with your host settings.
 
 ## Integration Notes
-- The demo uses `malloc` for a fake UART base. On STM Nucleo-F411RE, replace
-  allocation with the actual USART base address from the STM32F411 reference
+- Register the actual USART base address from the STM32F411 reference
   manual (e.g., USART2 for the ST-LINK VCP).
-- Polling is used for transmit readiness via `wait_for_thr_empty`.
-- Buffer sizes are fixed at 256 bytes each; update
-  `SERIAL_DRIVER_TX_BUFFER_SIZE` and `SERIAL_DRIVER_RX_BUFFER_SIZE` if needed.
-
-## License
-Copyright (c) Cybercritter Software
-driver.UARTbase = (uint8_t*)USART2;
-
-// Ensure RCC clocking and GPIO alternate-function setup are enabled for USART2
-// before use (e.g., enable RCC_APB1ENR_USART2EN and configure GPIOA pins to AF7).
-```
-
-### GPIO/Clock Setup Reminder
-- Enable GPIOA and USART2 clocks (RCC_AHB1ENR for GPIOA, RCC_APB1ENR for USART2).
-- Configure PA2/PA3 to AF7, push-pull, high-speed, and appropriate pull-ups.
-- Set USART2 baud rate and frame format consistent with your host settings.
-
-## Integration Notes
-- The demo uses `malloc` for a fake UART base. On STM Nucleo-F411RE, replace
-  allocation with the actual USART base address from the STM32F411 reference
-  manual (e.g., USART2 for the ST-LINK VCP).
-- Polling is used for transmit readiness via `wait_for_thr_empty`.
 - Buffer sizes are fixed at 256 bytes each; update
   `SERIAL_DRIVER_TX_BUFFER_SIZE` and `SERIAL_DRIVER_RX_BUFFER_SIZE` if needed.
 

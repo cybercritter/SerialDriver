@@ -46,7 +46,7 @@ extern "C" {
  *     wrapping uses a conditional branch instead.
  */
 typedef struct {
-  uint8_t* data;
+  uint32_t* data;
   size_t capacity;
   size_t head;
   size_t tail;
@@ -66,7 +66,7 @@ typedef struct {
  *       is non-zero, storage must be non-NULL. Power-of-two capacities yield
  *       faster wrap behavior.
  */
-void cb_init(circular_buffer_t* cb, uint8_t* storage, size_t capacity);
+void cb_init(circular_buffer_t* cb, uint32_t* storage, size_t capacity);
 
 /**
  * @brief Resets the circular buffer to its initial empty state.
@@ -126,7 +126,7 @@ size_t cb_capacity(const circular_buffer_t* cb);
  * @return true if the value was successfully pushed, false if the buffer is full
  *         or has zero capacity.
  */
-bool cb_push(circular_buffer_t* cb, uint8_t value);
+bool cb_push(circular_buffer_t* cb, uint32_t value);
 
 /**
  * @brief Removes and retrieves an element from the circular buffer.
@@ -141,7 +141,7 @@ bool cb_push(circular_buffer_t* cb, uint8_t value);
  * @return true if an element was successfully popped from the buffer.
  * @return false if the buffer is empty or if invalid parameters were provided.
  */
-bool cb_pop(circular_buffer_t* cb, uint8_t* value);
+bool cb_pop(circular_buffer_t* cb, uint32_t* value);
 
 /**
  * @brief Peeks at the front element of the circular buffer without removing it.
@@ -155,7 +155,7 @@ bool cb_pop(circular_buffer_t* cb, uint8_t* value);
  * @return true if the peek operation was successful and a value was retrieved,
  *         false if the circular buffer is empty or if invalid parameters were provided.
  */
-bool cb_peek(const circular_buffer_t* cb, uint8_t* value);
+bool cb_peek(const circular_buffer_t* cb, uint32_t* value);
 
 #ifdef __cplusplus
 }

@@ -8,7 +8,7 @@
             "name": "Demo Serial Driver",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/demo",
+            "program": "${workspaceFolder}/build/bin/SerialDriverTests",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
